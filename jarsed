@@ -1,0 +1,15 @@
+#!/bin/bash 
+
+jar_file=`echo "${BASH_ARGV}" | awk -F: '{ print $1 }'`
+target_file=`echo "${BASH_ARGV}" | awk -F: '{ print $2 }'`
+sed_params=`echo "${@}" | awk '{$NF=""; print}'`
+
+jar -xf "${jar_file}" "${target_file}"
+pre_cksum=`cksum ${target_file}`
+execline=`echo "sed ${sed_params} ${target_file}"`
+${execline}
+post_cksum=`cksum ${target_file}`
+
+# Update archive only if target file was changed
+[ "${pre_cksum}" != "${post_cksum}" ]  &&  jar -uMf "${jar_file}" "${target_file}"
+rm "${target_file}"
